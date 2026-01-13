@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Process Decision Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .problems-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .problems-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .problem-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .problem-card {
+            background: white;
+            padding: 15px;
+            border-left: 4px solid #dc3545;
+            border-radius: 8px;
+        }
+
+        .problem-card strong {
+            display: block;
+            color: #dc3545;
+            margin-bottom: 5px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 40px 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .options-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-card {
+            border: 3px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .option-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+        }
+
+        .option-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .option-card.selected .option-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .option-card h3 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.4em;
+        }
+
+        .option-card p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .pros {
+            background: #d4edda;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .pros strong {
+            color: #155724;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .pros ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .pros li {
+            color: #155724;
+            font-size: 0.9em;
+            margin: 3px 0;
+        }
+
+        .pros li:before {
+            content: "✓ ";
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .cons {
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .cons strong {
+            color: #721c24;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .cons ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .cons li {
+            color: #721c24;
+            font-size: 0.9em;
+            margin: 3px 0;
+        }
+
+        .cons li:before {
+            content: "✗ ";
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #667eea;
+        }
+
+        .option-card.selected .checkbox {
+            background: #667eea;
+            color: white;
+        }
+
+        .feedback-section {
+            padding: 40px 30px;
+            background: white;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .feedback-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .feedback-group {
+            margin-bottom: 25px;
+        }
+
+        .feedback-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            padding: 30px;
+            background: #f8f9fa;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 32px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-width: 150px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #e9ecef;
+            color: #333;
+            min-width: 150px;
+        }
+
+        .btn-reset:hover {
+            background: #dee2e6;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 30px;
+            border-left: 4px solid #28a745;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .vote-summary {
+            padding: 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .vote-summary h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .vote-bars {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .vote-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .vote-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .vote-bar-label strong {
+            color: #333;
+        }
+
+        .vote-bar-label span {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .vote-bar-fill {
+            width: 100%;
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .vote-bar-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .data-section {
+            background: white;
+            padding: 30px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .data-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .data-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #e9ecef;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            color: #666;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 5px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            color: #666;
+            font-weight: 600;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Support Process Decision Tool</h1>
+            <p>Help us decide the best support ticket allocation approach for our team</p>
+        </header>
+
+        <div class="problems-section">
+            <h2>📌 Current Challenges</h2>
+            <div class="problem-list">
+                <div class="problem-card">
+                    <strong>⏱️ Time Waste in Standups</strong>
+                    Too much time spent discussing WHO takes over support tickets instead of focusing on blockers and learnings
+                </div>
+                <div class="problem-card">
+                    <strong>⚖️ Uneven Distribution</strong>
+                    Some colleagues take on support regularly while others rarely participate
+                </div>
+            </div>
+        </div>
+
+        <div class="options-container">
+            <div class="option-card" onclick="selectOption(this, 1)">
+                <div class="checkbox">○</div>
+                <div class="option-number">1</div>
+                <h3>Weekly Rotation</h3>
+                <p><strong>Full Ownership Model</strong></p>
+                <p>Each person rotates weekly, owns all support tickets in their timeframe, and can ask for help when needed.</p>
+
+                <div class="pros">
+                    <strong>✓ Advantages</strong>
+                    <ul>
+                        <li>Zero time deciding allocation (automatic)</li>
+                        <li>Complete fairness - everyone rotates equally</li>
+                        <li>Faster decision-making in standups</li>
+                        <li>High skill development through full ownership</li>
+                        <li>Everyone learns broad ticket types</li>
+                    </ul>
+                </div>
+
+                <div class="cons">
+                    <strong>✗ Trade-offs</strong>
+                    <ul>
+                        <li>Person changes every week (low continuity)</li>
+                        <li>May feel overwhelming first time</li>
+                        <li>Knowledge concentrated to one person that week</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="option-card" onclick="selectOption(this, 2)">
+                <div class="checkbox">○</div>
+                <div class="option-number">2</div>
+                <h3>2-Person Pairing</h3>
+                <p><strong>Buddy System (2 weeks)</strong></p>
+                <p>Two colleagues work together for 2 weeks. Pair experienced + new, or complementary expertise. Solve tickets together.</p>
+
+                <div class="pros">
+                    <strong>✓ Advantages</strong>
+                    <ul>
+                        <li>Built-in mentoring and knowledge transfer</li>
+                        <li>Stable pair for 2 weeks (better continuity)</li>
+                        <li>No one feels alone during support duty</li>
+                        <li>Covers broader expertise with complementary skills</li>
+                        <li>Faster learning curve for less experienced members</li>
+                        <li>Strong pair bonding and engagement</li>
+                    </ul>
+                </div>
+
+                <div class="cons">
+                    <strong>✗ Trade-offs</strong>
+                    <ul>
+                        <li>Requires careful pairing strategy</li>
+                        <li>May still have fairness concerns if pairings are unbalanced</li>
+                        <li>Requires 2x people for same coverage</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="option-card" onclick="selectOption(this, 3)">
+                <div class="checkbox">○</div>
+                <div class="option-number">3</div>
+                <h3>Keep Current Process</h3>
+                <p><strong>No Change</strong></p>
+                <p>Continue with the current support allocation approach and process.</p>
+
+                <div class="pros">
+                    <strong>✓ Advantages</strong>
+                    <ul>
+                        <li>No disruption to current workflow</li>
+                        <li>Familiar process</li>
+                        <li>Flexibility in assignment</li>
+                    </ul>
+                </div>
+
+                <div class="cons">
+                    <strong>✗ Trade-offs</strong>
+                    <ul>
+                        <li>Continues spending time deciding allocation in standups</li>
+                        <li>Uneven distribution remains</li>
+                        <li>No structured skill development</li>
+                        <li>Blockers/learnings still get less focus</li>
+                        <li>Some team members may feel isolated or overloaded</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="feedback-section">
+            <h2>💭 Your Input</h2>
+
+            <div class="feedback-group">
+                <label for="name">Your Name (optional)</label>
+                <input type="text" id="name" placeholder="Enter your name">
+            </div>
+
+            <div class="feedback-group">
+                <label for="selected-option">Selected Option</label>
+                <input type="text" id="selected-option" placeholder="Click on an option above" readonly style="background: #f8f9fa;">
+            </div>
+
+            <div class="feedback-group">
+                <label for="blockers">🚧 Current Support Blockers (What gets in the way?)</label>
+                <textarea id="blockers" placeholder="Share any obstacles or challenges you face with the current support process..."></textarea>
+            </div>
+
+            <div class="feedback-group">
+                <label for="learnings">📚 Key Learnings from Support Tickets</label>
+                <textarea id="learnings" placeholder="What have you learned from recent support tickets? Any patterns or insights?"></textarea>
+            </div>
+
+            <div class="feedback-group">
+                <label for="additional">💡 Additional Feedback</label>
+                <textarea id="additional" placeholder="Any other thoughts, concerns, or suggestions?"></textarea>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-submit" onclick="submitVote()">Submit Your Vote</button>
+            <button class="btn-reset" onclick="resetForm()">Reset Form</button>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            ✓ Thank you! Your vote and feedback have been recorded successfully.
+        </div>
+
+        <div class="vote-summary" id="voteSummary" style="display: none;">
+            <h3>📊 Current Vote Summary (Live Updates)</h3>
+            <div class="vote-bars">
+                <div class="vote-bar">
+                    <div class="vote-bar-label">
+                        <strong>Option 1: Weekly Rotation</strong>
+                        <span id="votes1-pct">0%</span>
+                    </div>
+                    <div class="vote-bar-fill">
+                        <div class="vote-bar-progress" id="bar1" style="width: 0%">
+                            <span id="votes1">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vote-bar">
+                    <div class="vote-bar-label">
+                        <strong>Option 2: 2-Person Pairing</strong>
+                        <span id="votes2-pct">0%</span>
+                    </div>
+                    <div class="vote-bar-fill">
+                        <div class="vote-bar-progress" id="bar2" style="width: 0%">
+                            <span id="votes2">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vote-bar">
+                    <div class="vote-bar-label">
+                        <strong>Option 3: Keep Current Process</strong>
+                        <span id="votes3-pct">0%</span>
+                    </div>
+                    <div class="vote-bar-fill">
+                        <div class="vote-bar-progress" id="bar3" style="width: 0%">
+                            <span id="votes3">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="color: #666; font-size: 0.9em; margin-bottom: 20px;">
+                <strong>Total Votes: <span id="totalVotes">0</span></strong> | Last updated: <span id="lastUpdate">never</span>
+            </p>
+        </div>
+
+        <div class="data-section" id="dataSection" style="display: none;">
+            <h3>📋 Detailed Voting Data & Export</h3>
+
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('summary')">Summary</button>
+                <button class="tab-button" onclick="switchTab('detailed')">Detailed Responses</button>
+                <button class="tab-button" onclick="switchTab('feedback')">Feedback & Insights</button>
+            </div>
+
+            <div id="summary" class="tab-content active">
+                <div class="data-buttons">
+                    <button class="btn-secondary" onclick="exportCSV()">📥 Export as CSV</button>
+                    <button class="btn-secondary" onclick="exportJSON()">📥 Export as JSON</button>
+                    <button class="btn-secondary" onclick="printReport()">🖨️ Print Report</button>
+                </div>
+                <div id="summaryContent" style="margin-top: 20px;"></div>
+            </div>
+
+            <div id="detailed" class="tab-content">
+                <div id="detailedContent" style="margin-top: 20px;"></div>
+            </div>
+
+            <div id="feedback" class="tab-content">
+                <div id="feedbackContent" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedOption = null;
+        const votes = {1: 0, 2: 0, 3: 0};
+
+        function selectOption(element, optionNumber) {
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('.checkbox').textContent = '○';
+            });
+
+            element.classList.add('selected');
+            element.querySelector('.checkbox').textContent = '✓';
+            selectedOption = optionNumber;
+
+            const optionNames = {
+                1: 'Option 1: Weekly Rotation',
+                2: 'Option 2: 2-Person Pairing',
+                3: 'Option 3: Keep Current Process'
+            };
+
+            document.getElementById('selected-option').value = optionNames[optionNumber];
+        }
+
+        function submitVote() {
+            if (!selectedOption) {
+                alert('Please select an option first!');
+                return;
+            }
+
+            const voteData = {
+                name: document.getElementById('name').value || 'Anonymous',
+                selected_option: selectedOption,
+                blockers: document.getElementById('blockers').value,
+                learnings: document.getElementById('learnings').value,
+                additional_feedback: document.getElementById('additional').value,
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('Vote submitted:', voteData);
+
+            votes[selectedOption]++;
+            updateVoteSummary();
+
+            const successMsg = document.getElementById('successMessage');
+            successMsg.classList.add('show');
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 4000);
+
+            let allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            allVotes.push(voteData);
+            localStorage.setItem('supportVotes', JSON.stringify(allVotes));
+
+            updateDataSection();
+
+            setTimeout(() => {
+                resetForm();
+            }, 500);
+        }
+
+        function resetForm() {
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+                card.querySelector('.checkbox').textContent = '○';
+            });
+            selectedOption = null;
+            document.getElementById('name').value = '';
+            document.getElementById('selected-option').value = '';
+            document.getElementById('blockers').value = '';
+            document.getElementById('learnings').value = '';
+            document.getElementById('additional').value = '';
+        }
+
+        function updateVoteSummary() {
+            const total = votes[1] + votes[2] + votes[3];
+            document.getElementById('voteSummary').style.display = 'block';
+            document.getElementById('votes1').textContent = votes[1];
+            document.getElementById('votes2').textContent = votes[2];
+            document.getElementById('votes3').textContent = votes[3];
+            document.getElementById('totalVotes').textContent = total;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+
+            if (total > 0) {
+                const pct1 = Math.round((votes[1] / total) * 100);
+                const pct2 = Math.round((votes[2] / total) * 100);
+                const pct3 = Math.round((votes[3] / total) * 100);
+
+                document.getElementById('votes1-pct').textContent = pct1 + '%';
+                document.getElementById('votes2-pct').textContent = pct2 + '%';
+                document.getElementById('votes3-pct').textContent = pct3 + '%';
+
+                document.getElementById('bar1').style.width = pct1 + '%';
+                document.getElementById('bar2').style.width = pct2 + '%';
+                document.getElementById('bar3').style.width = pct3 + '%';
+            }
+        }
+
+        function updateDataSection() {
+            const allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            if (allVotes.length > 0) {
+                document.getElementById('dataSection').style.display = 'block';
+                renderSummary(allVotes);
+                renderDetailed(allVotes);
+                renderFeedback(allVotes);
+            }
+        }
+
+        function renderSummary(allVotes) {
+            const total = allVotes.length;
+            const counts = {1: 0, 2: 0, 3: 0};
+            const names = {1: 'Weekly Rotation', 2: '2-Person Pairing', 3: 'Keep Current'};
+
+            allVotes.forEach(v => counts[v.selected_option]++);
+
+            let html = '<table class="data-table"><thead><tr><th>Option</th><th>Votes</th><th>Percentage</th></tr></thead><tbody>';
+            for (let i = 1; i <= 3; i++) {
+                const pct = total > 0 ? ((counts[i] / total) * 100).toFixed(1) : 0;
+                html += `<tr><td>${names[i]}</td><td>${counts[i]}</td><td>${pct}%</td></tr>`;
+            }
+            html += '</tbody></table>';
+            document.getElementById('summaryContent').innerHTML = html;
+        }
+
+        function renderDetailed(allVotes) {
+            let html = '<table class="data-table"><thead><tr><th>Name</th><th>Vote</th><th>Timestamp</th></tr></thead><tbody>';
+            const names = {1: 'Weekly Rotation', 2: '2-Person Pairing', 3: 'Keep Current'};
+
+            allVotes.forEach(v => {
+                const date = new Date(v.timestamp).toLocaleString();
+                html += `<tr><td>${v.name}</td><td>${names[v.selected_option]}</td><td>${date}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('detailedContent').innerHTML = html;
+        }
+
+        function renderFeedback(allVotes) {
+            let html = '<div>';
+            allVotes.forEach((v, idx) => {
+                if (v.blockers || v.learnings || v.additional_feedback) {
+                    html += `<div style="margin-bottom: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #667eea;">
+                        <strong>${v.name}</strong> (Option ${v.selected_option})<br>
+                        <span style="font-size: 0.85em; color: #999;">
+                            ${new Date(v.timestamp).toLocaleString()}
+                        </span>`;
+
+                    if (v.blockers) {
+                        html += `<div style="margin-top: 10px;"><strong style="color: #dc3545;">🚧 Blockers:</strong><br>${v.blockers}</div>`;
+                    }
+                    if (v.learnings) {
+                        html += `<div style="margin-top: 10px;"><strong style="color: #0c5460;">📚 Learnings:</strong><br>${v.learnings}</div>`;
+                    }
+                    if (v.additional_feedback) {
+                        html += `<div style="margin-top: 10px;"><strong style="color: #856404;">💡 Feedback:</strong><br>${v.additional_feedback}</div>`;
+                    }
+
+                    html += '</div>';
+                }
+            });
+            html += '</div>';
+            document.getElementById('feedbackContent').innerHTML = html || '<p style="color: #999;">No feedback submitted yet.</p>';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function exportCSV() {
+            const allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            let csv = 'Name,Vote,Blockers,Learnings,Additional Feedback,Timestamp\n';
+
+            const names = {1: 'Weekly Rotation', 2: '2-Person Pairing', 3: 'Keep Current'};
+
+            allVotes.forEach(v => {
+                const blockers = (v.blockers || '').replace(/"/g, '""');
+                const learnings = (v.learnings || '').replace(/"/g, '""');
+                const feedback = (v.additional_feedback || '').replace(/"/g, '""');
+
+                csv += `"${v.name}","${names[v.selected_option]}","${blockers}","${learnings}","${feedback}","${v.timestamp}"\n`;
+            });
+
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'support_votes_' + new Date().toISOString().slice(0, 10) + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportJSON() {
+            const allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            const dataStr = JSON.stringify(allVotes, null, 2);
+            const blob = new Blob([dataStr], {type: 'application/json'});
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'support_votes_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function printReport() {
+            const allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            const total = allVotes.length;
+            const counts = {1: 0, 2: 0, 3: 0};
+
+            allVotes.forEach(v => counts[v.selected_option]++);
+
+            let printWindow = window.open('', '', 'height=400,width=800');
+            printWindow.document.write('<html><head><title>Support Process Voting Report</title>');
+            printWindow.document.write('<style>body{font-family:Arial; margin:20px;} h1{color:#667eea;} table{border-collapse:collapse; width:100%;} th,td{border:1px solid #ddd; padding:10px; text-align:left;} th{background-color:#667eea; color:white;}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h1>Support Process Decision Voting Report</h1>');
+            printWindow.document.write('<p><strong>Total Votes: ' + total + '</strong></p>');
+            printWindow.document.write('<table><tr><th>Option</th><th>Votes</th><th>Percentage</th></tr>');
+            for (let i = 1; i <= 3; i++) {
+                const pct = total > 0 ? ((counts[i] / total) * 100).toFixed(1) : 0;
+                const names = ['', 'Weekly Rotation', '2-Person Pairing', 'Keep Current'];
+                printWindow.document.write('<tr><td>' + names[i] + '</td><td>' + counts[i] + '</td><td>' + pct + '%</td></tr>');
+            }
+            printWindow.document.write('</table>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        window.addEventListener('load', () => {
+            const allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            votes[1] = allVotes.filter(v => v.selected_option === 1).length;
+            votes[2] = allVotes.filter(v => v.selected_option === 2).length;
+            votes[3] = allVotes.filter(v => v.selected_option === 3).length;
+            if (votes[1] + votes[2] + votes[3] > 0) {
+                updateVoteSummary();
+                updateDataSection();
+            }
+        });
+
+        // Auto-refresh every 5 seconds to show live updates when multiple people are voting
+        setInterval(() => {
+            const allVotes = JSON.parse(localStorage.getItem('supportVotes') || '[]');
+            const newVotes = {1: 0, 2: 0, 3: 0};
+            allVotes.forEach(v => newVotes[v.selected_option]++);
+
+            if (newVotes[1] !== votes[1] || newVotes[2] !== votes[2] || newVotes[3] !== votes[3]) {
+                votes[1] = newVotes[1];
+                votes[2] = newVotes[2];
+                votes[3] = newVotes[3];
+                updateVoteSummary();
+                updateDataSection();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
